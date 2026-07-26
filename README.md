@@ -31,7 +31,6 @@ reports/
 src/
 README.md
 ```
-```
 
 ## How to Run
 
