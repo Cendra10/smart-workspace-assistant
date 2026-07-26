@@ -24,20 +24,13 @@ Smart Workspace Assistant is a simple Command Line Interface (CLI) application b
 ## Project Structure
 
 ```text
-│   README.md
-│   
-├───config
-├───data
-│       tasks_backup.json
-│       
-├───logs
-│       app.log
-│       
-├───reports
-│       notes.txt
-│       
-└───src
-        main.py
+config/
+data/
+logs/
+reports/
+src/
+README.md
+```
 ```
 
 ## How to Run
