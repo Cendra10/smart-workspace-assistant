@@ -5,8 +5,7 @@ from pathlib import Path
 
 
 def show_version():
-    print("" \
-    "Version 1.0.0")
+    print("Version 1.0.0")
 
 def show_help():
     print("""
