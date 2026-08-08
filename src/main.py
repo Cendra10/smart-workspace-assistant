@@ -1,73 +1,68 @@
-import json
-import logging
-import sys
-from pathlib import Path
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
+from src.database import (
+    create_task,
+    get_task,
+    get_all_tasks,
+    update_task,
+    delete_task,
+)
 
-def show_version():
-    print("Version 1.0.0")
+app = FastAPI()
 
-def show_help():
-    print("""
-Smart Workspace Assistant
-    
-Available Commands:
-    
-help          Show help information
-version       Show application version
-report        Show task report""")
+@app.get("/")
+def root():
+    return{
+        "message":"Smart Workspace Assistant API"
+}
 
-def show_unknown(command):
-    print(f"Unknown Command: {command}")  
+@app.get("/about")
+def about():
+    return{
+        "project": "Smart Workspace Assistant API",
+        "version": "2.0.0"
+    }
 
-def show_report():
-    project_path = Path.cwd()
+@app.get("/tasks/{task_id}")
+def get_task_endpoint(task_id: int):
 
-    log_folder = project_path / "logs"
-    log_folder.mkdir(exist_ok=True)
+    rows = get_task(task_id)
 
-    logging.basicConfig(
-        filename = log_folder / "app.log",
-        level = logging.INFO,
-        format = "%(asctime)s - %(levelname)s - %(message)s",
+    if rows is None:
+        raise HTTPException(
+            status_code = 404,
+            detail = "Task not found"
         )
+    return rows 
 
-    json_file = project_path/ "data" / "tasks.json"
+@app.get("/search")
+def search(keyword:str):
+    return{
+        "keyword": keyword
+    }
 
-    try:
-        with open(json_file, "r") as file:
-            data = json.load(file)
+class Task(BaseModel):
+    title : str
 
-            print("---Smart Workspace Report---")
-            tasks = data["tasks"]
+@app.post("/tasks")
+def create_task_endpoint(task:Task):
+    create_task(task.title)
+    return task
 
-            if len(tasks) == 0 :
-                print("Belum ada task.")
-                return
+@app.get("/tasks")
+def get_all_task_endpoint():
+    return get_all_tasks()
 
-            for nomor, task in enumerate(tasks, start = 1):
-                print(f"{nomor}. {task}")
+@app.put("/tasks/{task_id}")
+def update_task_endpoint(task_id: int, task:Task):
+    update_task(task_id, task.title)
+    return task
 
-        logging.info("tasks.json berhasil dibaca.")
-    except FileNotFoundError:
-        logging.error("tasks.json tidak ditemukan.")
-        print("tasks.json tidak ditemukan")
+@app.delete("/tasks/{task_id}")
+def delete_task_endpoint(task_id: int):
+    delete_task(task_id)
 
-def main():
-    if len(sys.argv) < 2 :
-        show_help()
-        return
-    
-    command = sys.argv[1]
-
-    if command == "help":
-        show_help()
-    elif command == "version":
-        show_version()
-    elif command == "report":
-        show_report()
-    else:
-        show_unknown(command)
-
-if __name__ == "__main__":
-    main()
+    return{
+        "message": "Task deleted successfully"
+    }
